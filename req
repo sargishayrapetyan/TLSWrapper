@@ -1,0 +1,8 @@
+1. class for TLSClient
+	init, read, write, connect(tcp related connections)
+2. class for TLSServer
+	the same as TLSClient functions
+
+3. overload constructor
+4. overload read/write functions 
+
