@@ -16,12 +16,15 @@
 #include <openssl/crypto.h>
 #include <openssl/err.h>
 
+#include <memory>
+
 //using namespace TLS;
 
 namespace TLS {
         class SecureClient {
 
             public:
+                SecureClient() = default;
                 SecureClient(const ServerConfig& aServerConfig) noexcept;
 
                 SecureClient(const ServerConfig& aServerConfig, const SSL_METHOD* aTlsVersion) noexcept;
@@ -29,17 +32,18 @@ namespace TLS {
                 virtual ~SecureClient() noexcept;
 
             public:
-                void send() noexcept;
+                void send(char* aPayload, size_t aPayloadSize) noexcept;
+                void send(const std::string& aPayload) noexcept;
 
             private:
                 void prepareConnect() noexcept;
-                bool sendPayload(char* aDeviceTokenBinary, char* aPayloadBuff, size_t aPayloadLength) noexcept;
+                bool sendPayload(char* aPayload, size_t aPayloadSize) noexcept;
 
             private:
+                int m_SocketFD;
+                ServerConfig m_ServerConfig;
                 SSL* m_Ssl;
                 SSL_CTX* m_Ctx;
-                ServerConfig m_ServerConfig;
-                int m_SocketFD;
         };
     }
 #endif

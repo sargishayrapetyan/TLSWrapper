@@ -1,0 +1,6 @@
+openssl genpkey -algorithm ED25519 > localhost.key
+
+//setup conf file
+openssl req -new -out localhost.csr -key example.com.key -config openssl-25519.conf
+openssl req -new -out localhost.csr -key localhost.key -config localhost_ed25519.conf
+openssl x509 -req -days 700 -in localhost.csr -signkey localhost.key -out localhost.crt

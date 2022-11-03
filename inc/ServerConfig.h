@@ -6,6 +6,7 @@
 namespace TLS {
     class ServerConfig {
         public:
+            ServerConfig();
             //TODO add note into documentation that default port is 8080 and default host is "0.0.0.0"            
             ServerConfig(const std::string& aCertificate,
                         const std::string& aHost = "0.0.0.0",

@@ -3,6 +3,11 @@
 2. class for TLSServer
 	the same as TLSClient functions
 
+. prepare connect by other certificate types if possible
 3. overload constructor
 4. overload read/write functions 
 
+5. integrate pybind11
+6. intergrate JNI
+
+7. logging as should be library we need to return some error codes;

@@ -1,8 +1,15 @@
 #include <ServerConfig.h>
-
 #include <iostream>
 
-TLS::ServerConfig::ServerConfig(const std::string& aCertificate, const std::string& aHost, unsigned int aPort) 
+TLS::ServerConfig::ServerConfig()
+    : m_Certificate()
+    , m_Host("0.0.0.0")
+    , m_Port(8080)
+{
+    
+}
+
+TLS::ServerConfig::ServerConfig(const std::string& aCertificate, const std::string& aHost, unsigned int aPort) noexcept
     : m_Certificate(aCertificate)
     , m_Host(aHost)
     , m_Port(aPort)

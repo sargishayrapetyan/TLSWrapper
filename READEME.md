@@ -10,5 +10,5 @@ steps to setup
     make
     make test
     make install
-    sudo ldconfig
+    sudo ldconfig /usr/local/lib64/ (path to where the libs of ssl are)
     ln -sf /usr/local/bin/openssl /usr/bin/
