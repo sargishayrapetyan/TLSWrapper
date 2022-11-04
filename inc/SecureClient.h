@@ -24,7 +24,7 @@ namespace TLS {
         class SecureClient {
 
             public:
-                SecureClient() = default;
+                SecureClient();
                 SecureClient(const ServerConfig& aServerConfig) noexcept;
 
                 SecureClient(const ServerConfig& aServerConfig, const SSL_METHOD* aTlsVersion) noexcept;
@@ -34,6 +34,7 @@ namespace TLS {
             public:
                 void send(char* aPayload, size_t aPayloadSize) noexcept;
                 void send(const std::string& aPayload) noexcept;
+                void receive();
 
             private:
                 void prepareConnect() noexcept;

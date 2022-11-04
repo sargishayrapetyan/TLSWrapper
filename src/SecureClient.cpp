@@ -5,11 +5,16 @@
 #include <sstream>
 #include <iostream>
 
+TLS::SecureClient::SecureClient()
+    : m_Ssl(nullptr)
+    , m_Ctx(SSL_CTX_new(TLS_client_method()))
+{}
+
 TLS::
 SecureClient::SecureClient(const ServerConfig& aServerConfig) noexcept
     : m_ServerConfig(aServerConfig)
     , m_Ssl(nullptr)
-    , m_Ctx(SSL_CTX_new(TLSv1_2_method()))//create another constructor to use other tls method oveload
+    , m_Ctx(SSL_CTX_new(TLS_client_method()))//create another constructor to use other tls method oveload
 {
     prepareConnect();
 }
@@ -39,13 +44,11 @@ SecureClient::send(const std::string& aPayload) noexcept
 void TLS::
 SecureClient::prepareConnect() noexcept
 {
-    struct hostent *lHostent;
-    struct sockaddr_in lSockAddrIn;
-    
+
+    //TODO separate CTX part
     SSLeay_add_ssl_algorithms();
     SSL_load_error_strings();
     if (! m_Ctx) {
-        // LOG_ERROR("FAILED TO CREATE SSL COTEXT! SSL_CTX_new()...faild");
         return;
     }   
     
@@ -62,35 +65,37 @@ SecureClient::prepareConnect() noexcept
     }   
     
     //TODO PRIVATE file separete them maybe not need
-    if (SSL_CTX_use_PrivateKey_file(m_Ctx, m_ServerConfig.getCertificate().c_str(), SSL_FILETYPE_PEM) <= 0) {
+    if (SSL_CTX_use_PrivateKey_file(m_Ctx, m_ServerConfig.getPriateKey().c_str(), SSL_FILETYPE_PEM) <= 0) {
         ERR_print_errors_fp(stderr);
+        std::cout << "FAILED TO use private key" << std::endl;
         return;
     }   
     
     if (SSL_CTX_check_private_key(m_Ctx) <= 0) {
         ERR_print_errors_fp(stderr);
+        std::cout << "FAILED TO Check private key" << std::endl;
         return;
     }   
     
     m_SocketFD = socket(AF_INET, SOCK_STREAM, 0); 
     if (m_SocketFD == -1) {
-        // LOG_ERROR("FAILED TO CREATE SOCKET! socket()...-1");
+        std::cout << "FAILED TO CREATE SOCKET! socket()...-1" << std::endl;
         return;
     }   
-    
+    struct hostent *lHostent;
+    struct sockaddr_in lSockAddrIn;
+
     lSockAddrIn.sin_family = AF_INET;
     lHostent = gethostbyname(m_ServerConfig.getHost().c_str());
     
     if (! lHostent) {
-        // LOG_ERROR("FAILED TO GET HOST BY NAME!");
         close(m_SocketFD);
         return;
-    }   
+    }
     lSockAddrIn.sin_addr.s_addr = inet_addr(inet_ntoa(*((struct in_addr *) lHostent->h_addr_list[0])));
     lSockAddrIn.sin_port = htons(m_ServerConfig.getPort());
     
     if (connect(m_SocketFD, (struct sockaddr *) &lSockAddrIn, sizeof(lSockAddrIn)) == -1) {
-        // LOG_ERROR("FAILED TO CONNECT TO HOST!");
         close(m_SocketFD);
         return;
     }   
@@ -98,15 +103,24 @@ SecureClient::prepareConnect() noexcept
     m_Ssl = SSL_new(m_Ctx);
     SSL_set_connect_state(m_Ssl); //TODO function to set client mode , NOTE: SSL_set_accept_state for server mode
     SSL_set_fd(m_Ssl, m_SocketFD);
-    int lErrorCode = SSL_connect(m_Ssl);
+    int lErrorCode = SSL_connect(m_Ssl); //TODO handshake with server
 
-    if (lErrorCode != 1) { //TODO handshake with server
+    if (lErrorCode != 1) { 
         std::cout << "failed to connect to server " << std::endl;
         shutdown(m_SocketFD, 2); 
         close(m_SocketFD);
         return;
     }
     std::cout << "connection success" << std::endl; //create enum for this purpose
+}
+
+void TLS::SecureClient::receive() {
+    char inbuffer[1024];
+    int cc = 0;
+    while (true) {
+        cc = SSL_read(m_Ssl, inbuffer, 1024);
+    }
+    std::cout << "recevied " << cc << "bytes" << std::endl;
 }
 
 bool TLS::
