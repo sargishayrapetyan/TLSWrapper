@@ -11,24 +11,36 @@
 #include <openssl/ssl.h>
 #include <openssl/err.h>
 
+#include <map>
+#include <thread>
+
 #include "ServerConfig.h"
 
 namespace TLS {
     class SecureServer {
+        public:
+            using SOCKET = int;
         public:
             SecureServer();
             SecureServer(const ServerConfig &aServerConfig, const SSL_METHOD *aTlsVersion);
             SecureServer(const ServerConfig &aServerConfig);
 
             int createSocket();
-            void init_context();
-            void listen_client();
+            void acceptClient();
+            void initContext();
+            SSL* createSSLConnection(SOCKET aAcceptedCliet);
+            void startListen();
+            bool receiveMessage(SSL* aSsl, SOCKET aAcceptedCliet);
+
+            SOCKET accpetExternal();
+            char* listenExternal();
+            //SOCKET getConnectionId();
             virtual ~SecureServer() noexcept;
 
         private:
-            int m_SocketFD;
+            SOCKET m_SocketFD;
             ServerConfig m_ServerConfig;
-            SSL* m_Ssl;
+            std::map<SOCKET, std::pair<std::thread, SSL*>> ServerClientConnection;
             SSL_CTX* m_Ctx;
     };
 }
