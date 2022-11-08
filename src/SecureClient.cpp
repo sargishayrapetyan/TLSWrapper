@@ -37,9 +37,8 @@ SecureClient::send(char* aPayload, size_t aPayloadSize) noexcept
 void TLS::
 SecureClient::send(const std::string& aPayload) noexcept
 {
-    //TODO
+    sendPayload(aPayload.c_str(), aPayload.size());
 }
-
 
 void TLS::
 SecureClient::prepareConnect() noexcept
@@ -77,10 +76,15 @@ SecureClient::prepareConnect() noexcept
         return;
     }   
     
+}
+
+
+bool TLS::SecureClient::connectToServer() {
+    
     m_SocketFD = socket(AF_INET, SOCK_STREAM, 0); 
     if (m_SocketFD == -1) {
         std::cout << "FAILED TO CREATE SOCKET! socket()...-1" << std::endl;
-        return;
+        return false;
     }   
     struct hostent *lHostent;
     struct sockaddr_in lSockAddrIn;
@@ -90,14 +94,14 @@ SecureClient::prepareConnect() noexcept
     
     if (! lHostent) {
         close(m_SocketFD);
-        return;
+        return false;
     }
     lSockAddrIn.sin_addr.s_addr = inet_addr(inet_ntoa(*((struct in_addr *) lHostent->h_addr_list[0])));
     lSockAddrIn.sin_port = htons(m_ServerConfig.getPort());
     
     if (connect(m_SocketFD, (struct sockaddr *) &lSockAddrIn, sizeof(lSockAddrIn)) == -1) {
         close(m_SocketFD);
-        return;
+        return false;
     }   
 
     m_Ssl = SSL_new(m_Ctx);
@@ -109,9 +113,10 @@ SecureClient::prepareConnect() noexcept
         std::cout << "failed to connect to server " << std::endl;
         shutdown(m_SocketFD, 2); 
         close(m_SocketFD);
-        return;
+        return false;
     }
     std::cout << "connection success" << std::endl; //create enum for this purpose
+    return true;
 }
 
 void TLS::SecureClient::receive() {
@@ -119,12 +124,12 @@ void TLS::SecureClient::receive() {
     int cc = 0;
     while (true) {
         cc = SSL_read(m_Ssl, inbuffer, 1024);
+        std::cout << "recevied " << cc << "bytes" << std::endl;
     }
-    std::cout << "recevied " << cc << "bytes" << std::endl;
 }
 
 bool TLS::
-SecureClient::sendPayload(char* aPayload, size_t aPayloadSize) noexcept {
+SecureClient::sendPayload(const char* aPayload, size_t aPayloadSize) noexcept {
     //TODO
         int lResult = SSL_write(m_Ssl, aPayload, aPayloadSize);
         if (lResult > 0) {
@@ -150,11 +155,15 @@ SecureClient::sendPayload(char* aPayload, size_t aPayloadSize) noexcept {
     return false; 
 }
 
- TLS::
-SecureClient::~SecureClient() noexcept
-{
+
+void TLS::SecureClient::closeConncetion() {
     SSL_shutdown(m_Ssl);
     SSL_free(m_Ssl);
     close(m_SocketFD);
     SSL_CTX_free(m_Ctx);
+}
+ TLS::
+SecureClient::~SecureClient() noexcept
+{
+    closeConncetion();
 }

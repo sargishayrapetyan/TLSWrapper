@@ -35,10 +35,12 @@ namespace TLS {
                 void send(char* aPayload, size_t aPayloadSize) noexcept;
                 void send(const std::string& aPayload) noexcept;
                 void receive();
+                void closeConncetion();
+                bool connectToServer();
 
             private:
                 void prepareConnect() noexcept;
-                bool sendPayload(char* aPayload, size_t aPayloadSize) noexcept;
+                bool sendPayload(const char* aPayload, size_t aPayloadSize) noexcept;
 
             private:
                 int m_SocketFD;

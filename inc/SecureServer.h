@@ -13,8 +13,10 @@
 
 #include <map>
 #include <thread>
+#include <mutex>
 
 #include "ServerConfig.h"
+#include "ConnectionThread.h"
 
 namespace TLS {
     class SecureServer {
@@ -28,10 +30,11 @@ namespace TLS {
             int createSocket();
             void acceptClient();
             void initContext();
-            SSL* createSSLConnection(SOCKET aAcceptedCliet);
+            bool createSSLConnection(SOCKET aAcceptedCliet);
             void startListen();
-            bool receiveMessage(SSL* aSsl, SOCKET aAcceptedCliet);
-
+            int readBytes(SSL *aSsl);
+            bool receiveMessage(SOCKET aAcceptedCliet);
+            void closeConnection(SSL* aSsl, SOCKET aClient);
             SOCKET accpetExternal();
             char* listenExternal();
             //SOCKET getConnectionId();
@@ -40,8 +43,10 @@ namespace TLS {
         private:
             SOCKET m_SocketFD;
             ServerConfig m_ServerConfig;
-            std::map<SOCKET, std::pair<std::thread, SSL*>> ServerClientConnection;
-            SSL_CTX* m_Ctx;
+            std::map<SOCKET, std::thread> m_ClientConnectionThreads;
+            std::map<SOCKET, SSL*> m_ClientSSLConnections;
+            SSL_CTX *m_Ctx;
+            std::mutex mtx;
     };
 }
 
