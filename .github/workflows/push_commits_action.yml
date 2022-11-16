@@ -2,7 +2,7 @@ name: push_action #name of the workflow
 run-name: ${{ github.actor }} pushed a new commit #message that should appear in workflow description
 on: [push] # event on which the workflow should start
 jobs:
-  setup-dependecies:
+  build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -28,5 +28,12 @@ jobs:
         uses: jwlawson/actions-setup-cmake@v1.13
         with:
           cmake-version: '3.16.x'
-      - name: Use cmake
+      - name: use cmake
         run: cmake --version
+      - name: start build
+        run: |
+          mkdir build
+          cd build
+          cmake ..
+          make
+
