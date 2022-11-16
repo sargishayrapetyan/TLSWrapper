@@ -17,9 +17,9 @@ jobs:
           tar -xvzf openssl-3.0.7.tar.gz
           cd openssl-3.0.7
           ./Configure
-          make
-          make install
-          ln -sf /usr/local/bin/openssl /usr/bin/
+          sudo make
+          sudo make install
+          sudo ln -sf /usr/local/bin/openssl /usr/bin/
           cd -
       - name: use openssl
         run: openssl version
