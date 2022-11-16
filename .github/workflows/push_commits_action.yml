@@ -21,6 +21,7 @@ jobs:
           sudo make install
           sudo ln -sf /usr/local/bin/openssl /usr/bin/
           cd -
+          sudo ldconfig /usr/local/lib64/
       - name: use openssl
         run: openssl version
       - name: setup-cmake
