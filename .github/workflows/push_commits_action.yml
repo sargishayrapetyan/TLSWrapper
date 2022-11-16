@@ -2,28 +2,28 @@ name: push_action #name of the workflow
 run-name: ${{ github.actor }} pushed a new commit #message that should appear in workflow description
 on: [push] # event on which the workflow should start
 jobs:
-  setup-dependecies: 
+  setup-dependecies:
     runs-on: ubuntu-latest
-      steps:
-        - uses: actions/checkout@v3
-        - name: setup gcc version
-            run: |
-              sudo apt install gcc-10 g++-10
-              sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-10 100 --slave /usr/bin/g++ g++ /usr/bin/g++-10 --slave /usr/bin/gcov gcov /usr/bin/gcov-10
-              sudo update-alternatives --set gcc /usr/bin/gcc-10
-        - name: setup openssl library
-            run: |
-              wget https://www.openssl.org/source/openssl-3.0.7.tar.gz
-              tar -xvzf openssl-3.0.7.tar.gz
-              cd openssl-3.0.7
-              ./Configure
-              make install
-              sudo ldconfig /usr/local/lib64/
-              ln -sf /usr/local/bin/openssl /usr/bin/
-              cd -
-        - name: setup-cmake
-          uses: jwlawson/actions-setup-cmake@v1.13
-            with:
-              cmake-version: '3.16.x'
-        - name: Use cmake
-          run: cmake --version
+    steps:
+      - uses: actions/checkout@v3
+      - name: setup gcc version
+        run: |
+          sudo apt install gcc-10 g++-10
+          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-10 100 --slave /usr/bin/g++ g++ /usr/bin/g++-10 --slave /usr/bin/gcov gcov /usr/bin/gcov-10
+          sudo update-alternatives --set gcc /usr/bin/gcc-10
+      - name: setup openssl library
+        run: |
+          wget https://www.openssl.org/source/openssl-3.0.7.tar.gz
+          tar -xvzf openssl-3.0.7.tar.gz
+          cd openssl-3.0.7
+          ./Configure
+          make install
+          sudo ldconfig /usr/local/lib64/
+          ln -sf /usr/local/bin/openssl /usr/bin/
+          cd -
+      - name: setup-cmake
+        uses: jwlawson/actions-setup-cmake@v1.13
+        with:
+          cmake-version: '3.16.x'
+      - name: Use cmake
+        run: cmake --version
