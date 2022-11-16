@@ -16,36 +16,39 @@
 #include <mutex>
 
 #include "ServerConfig.h"
-#include "ConnectionThread.h"
 
 namespace TLS {
     class SecureServer {
         public:
             using SOCKET = int;
+
         public:
             SecureServer();
             SecureServer(const ServerConfig &aServerConfig, const SSL_METHOD *aTlsVersion);
             SecureServer(const ServerConfig &aServerConfig);
-
-            int createSocket();
-            void acceptClient();
-            void initContext();
-            bool createSSLConnection(SOCKET aAcceptedCliet);
-            void startListen();
-            int readBytes(SSL *aSsl);
-            bool receiveMessage(SOCKET aAcceptedCliet);
-            void closeConnection(SSL* aSsl, SOCKET aClient);
-            SOCKET accpetExternal();
-            char* listenExternal();
-            //SOCKET getConnectionId();
             virtual ~SecureServer() noexcept;
 
         private:
+            void initialiseSSLContext() noexcept(false);
+            int createSocketServer() noexcept(false);
+            void initialiseServer();
+            bool createSSLConnection(SOCKET aAcceptedCliet);
+            int readBytes(SSL *aSsl);
+            void closeConnection(SSL* aSsl, SOCKET aClient);
+        
+        public:
+            bool receiveMessage(SOCKET aAcceptedCliet);    
+            SOCKET accpetExternal();
+            char* listenExternal();
+            void acceptClient();        
+
+        private:
+            struct sockaddr_in m_Server;
             SOCKET m_SocketFD;
+            SSL_CTX *m_Ctx;
             ServerConfig m_ServerConfig;
             std::map<SOCKET, std::thread> m_ClientConnectionThreads;
             std::map<SOCKET, SSL*> m_ClientSSLConnections;
-            SSL_CTX *m_Ctx;
             std::mutex mtx;
     };
 }
